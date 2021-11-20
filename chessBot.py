@@ -3,7 +3,7 @@ import time
 import chess
 
 # Print iterations progress
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -19,7 +19,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    print(f'\n{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
     # Print New Line on Complete
     if iteration == total: 
         print()
@@ -30,8 +30,6 @@ class Chess:
         self.stockfish = Stockfish()
         self.selected = False
         self.moves = []
-        self.side = self.getSide()
-        self.yourTurn
         self.settings = {
             'bestMove' : 1,
             'advantage' : 1
@@ -53,6 +51,8 @@ class Chess:
                 self.yourTurn = False
                 self.selected = True
                 return "BLACK"
+            elif side == "EXIT":
+                self.exit()
         
     
     def isMoveLegal(self, move):
@@ -78,48 +78,48 @@ class Chess:
     def help(self):
         print("HELP")
         
+    def settingsPage(self):
+        print("Settings page")
+        back = False
+        while not back:
+            choice = input("Choose setting to change it: ")
+            if choice.upper() == "BACK":
+                back = True
+        
+        
     def exit(self):
         exit()
         
     def printAdvantage(self):
-        wAdv = 1
-        bAdv = 1
         evaluation = self.stockfish.get_evaluation()
         cp = evaluation["value"]
-        currentMoveAdvantage = round((1/(1+10**(-1*cp/4))), 2) #gives advantages after a player did a move for the oponent who will do the move
-        print(cp, currentMoveAdvantage)
-        # if self.side == "WHITE" and self.yourTurn:
-        #     wAdv = 
-
-            
-        # print("White advantage: ", wAdv, " Black advantage: ", bAdv)
-        """
-        possible outcomes:
-        Your turn youre black -> black
-        Your turn youre white -> white
-        Not your turn youre black -> white
-        Not your turn youre white -> black
-        """
-
-
-        # l = 100
-        # # Initial call to print 0% progress
-        # printProgressBar(currentMoveAdvantage*100, l, prefix = 'Progress:', suffix = 'Complete', length = 50)
-        # for i in range(0, l):
-        #     # Do stuff...
-        #     time.sleep(0.01)
-        #     # Update Progress Bar
-        #     printProgressBar(i + 1, l, prefix = 'Progress:', suffix = 'Complete', length = 50)
-
+        pawnAdvantage = cp/100
+        currentMoveAdvantage = round((1/(1+10**(-1*pawnAdvantage/4))), 2) 
+        printProgressBar(currentMoveAdvantage*100, 100, prefix = 'Advantage:', suffix = "", length = 50)
+        
+    def start(self):
+        while True:
+            choice  = input("Welcome to the chessBot \n \nTo play: PLAY \nTo access Settings: SETTINGS \nTo get help: HELP \nTo Exit: EXIT \n \nInput your choice: ")
+            choice = choice.upper()
+            if choice == "EXIT":
+                self.exit()
+            elif choice == "SETTINGS":
+                self.settingsPage()
+            elif choice == "HELP":
+                self.help()
+            elif choice == "PLAY":
+                self.play()
         
     def play(self):
+        self.side = self.getSide()
         while True:
+            self.printAdvantage()
             if self.side == "BLACK" and not self.yourTurn:
                 action = input("White's Move / Action: ")
             elif self.side == "BLACK" and self.yourTurn:
                 if self.settings["bestMove"] == 1:
                     bestMove = self.getBestMove()
-                    print(bestMove)
+                    print("Black's best move: ", bestMove)
                 action = input("Black's Move / Action: ")
 
             elif self.side == "WHITE" and not self.yourTurn:
@@ -127,7 +127,7 @@ class Chess:
             else:
                 if self.settings["bestMove"] == 1:
                     bestMove = self.getBestMove()
-                    print(bestMove)
+                    print("White's best move: ", bestMove)
                 action = input("White's Move / Action: ")
            
             if self.isMoveLegal(action):
@@ -140,20 +140,15 @@ class Chess:
                     self.printBoard()
                 elif action == "HELP":
                     self.help()
+                elif action == "SETTINGS":
+                    self.settingsPage()
                 else:
                     print("Illegal/unrecognised move or command")
-                # elif action == "SETTINGS" or "SET":
-                #     print("Settings page")
-                #     back = False
-                #     while not back:
-                #         choice = input("Choose setting to change it: ")
-                #         if choice.upper() == "BACK":
-                #             back = True
 
 
 if __name__ == '__main__':
     chessGame = Chess()    
-    chessGame.play()
+    chessGame.start()
     
     
     
