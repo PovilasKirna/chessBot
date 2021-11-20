@@ -1,6 +1,6 @@
 from stockfish import Stockfish
-import time
-import chess
+import stockfish
+from simple_term_menu import TerminalMenu
 
 # Print iterations progress
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
@@ -32,7 +32,8 @@ class Chess:
         self.moves = []
         self.settings = {
             'bestMove' : 1,
-            'advantage' : 1
+            'advantage' : 1,
+            'elo' : 800
         }
                 
     def getSide(self):
@@ -79,13 +80,48 @@ class Chess:
         print("HELP")
         
     def settingsPage(self):
-        print("Settings page")
-        back = False
-        while not back:
-            choice = input("Choose setting to change it: ")
-            if choice.upper() == "BACK":
-                back = True
-        
+        selectedItem = ""
+        while not selectedItem == "BACK":
+            if self.settings["bestMove"] == 1:
+                bm = "ON"
+            else:
+                bm = "OFF"
+                
+            if self.settings["advantage"] == 1:
+                ab = "ON"
+            else:
+                ab = "OFF"
+            el = self.settings["elo"]
+            options = [f"Best move: {bm}", f"Advantage Bar: {ab}", f"ELO: {el}", "BACK"]
+            terminal_menu = TerminalMenu(options)
+            menu_entry_index = terminal_menu.show()
+            selectedItem = options[menu_entry_index]
+            #print(f"You have selected {selectedItem}!")
+            if selectedItem == f"ELO: {el}":
+                 settingsInput = input("Inpute new engine elo: ")
+                 if settingsInput.isdecimal: 
+                    self.settings["elo"] = settingsInput
+            elif selectedItem == f"Advantage Bar: {ab}":
+                options = ["ON", "OFF", "BACK"]
+                terminal_menu = TerminalMenu(options)
+                menu_entry_index = terminal_menu.show()
+                ab_selectedItem = options[menu_entry_index]
+                if ab_selectedItem != ab and ab_selectedItem != options[2]:
+                    if self.settings["advantage"] == 1:
+                        self.settings["advantage"] = 0
+                    else:
+                        self.settings["advantage"] = 1
+            elif selectedItem == f"Best move: {bm}":
+                options = ["ON", "OFF", "BACK"]
+                terminal_menu = TerminalMenu(options)
+                menu_entry_index = terminal_menu.show()
+                bm_selectedItem = options[menu_entry_index]
+                if bm_selectedItem != bm and bm_selectedItem != options[2]:
+                    if self.settings["bestMove"] == 1:
+                        self.settings["bestMove"] = 0
+                    else:
+                        self.settings["bestMove"] = 1
+    
         
     def exit(self):
         exit()
@@ -111,9 +147,14 @@ class Chess:
                 self.play()
         
     def play(self):
+        self.stockfish.set_elo_rating(self.settings["elo"])
+        print(self.stockfish.get_parameters())
+
         self.side = self.getSide()
         while True:
-            self.printAdvantage()
+            if self.settings["advantage"] == 1:
+                self.printAdvantage()
+                
             if self.side == "BLACK" and not self.yourTurn:
                 action = input("White's Move / Action: ")
             elif self.side == "BLACK" and self.yourTurn:
@@ -121,10 +162,9 @@ class Chess:
                     bestMove = self.getBestMove()
                     print("Black's best move: ", bestMove)
                 action = input("Black's Move / Action: ")
-
             elif self.side == "WHITE" and not self.yourTurn:
                 action = input("Black's Move / Action: ")
-            else:
+            elif self.side == "WHITE" and self.yourTurn:
                 if self.settings["bestMove"] == 1:
                     bestMove = self.getBestMove()
                     print("White's best move: ", bestMove)
