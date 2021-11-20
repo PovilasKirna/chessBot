@@ -147,7 +147,8 @@ class Chess:
                 self.play()
         
     def play(self):
-        self.stockfish.set_elo_rating(self.settings["elo"])
+        #self.stockfish.set_skill_level(30)
+        #self.stockfish.set_elo_rating(self.settings["elo"])
         print(self.stockfish.get_parameters())
 
         self.side = self.getSide()
@@ -172,6 +173,9 @@ class Chess:
            
             if self.isMoveLegal(action):
                 self.makeMove(action)
+                self.printBoard()
+            # elif action == "bm":
+            #     self.makeMove(self.getBestMove)
             else: #if the move is illegal it's most likely a command
                 action = action.upper()
                 if action == "EXIT":
@@ -193,15 +197,5 @@ if __name__ == '__main__':
     
     
     """
-        implement difficulty
-        
-        other settings of stockfish
-
         make a help menu 
-        
-        add commands like:
-        
-        toggle best move 
-        toggle live score 
-        
     """
